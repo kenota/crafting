@@ -81,7 +81,6 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '/':
-                System.out.println("Matched the / ");
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
                 } else if (match('*')) {
