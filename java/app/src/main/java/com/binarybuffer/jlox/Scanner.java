@@ -81,8 +81,22 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '/':
+                System.out.println("Matched the / ");
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    while (!(peek() == '*' && peekNext() == '/') && !isAtEnd()) {
+                        if (peek() == '\n') {
+                            line++;
+                        }
+                        advance();
+                    }
+                    if (isAtEnd()) {
+                        Lox.error(line, "Unterminated multiline comment");
+                    }
+                    // We need to advance twice to discard */
+                    advance();
+                    advance();
                 } else {
                     addToken(SLASH);
                 }
