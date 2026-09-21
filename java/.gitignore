@@ -14,4 +14,3 @@ build
 
 app/build/**
 app/bin/**
-gradle/**
