@@ -118,10 +118,10 @@ class Scanner {
             default:
                 if (isDigit(c)) {
                     number();
-                } if (isAlpha(c)) {
+                } else if (isAlpha(c)) {
                     identifier();
-                }else {
-                    Lox.error(line, "unexpected character");
+                } else {
+                    Lox.error(line, "unexpected character '" + c + "' isDigit: " + isDigit(c));
                 }
                 break;
         }
