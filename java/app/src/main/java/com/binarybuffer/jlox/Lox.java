@@ -70,10 +70,10 @@ public class Lox {
         } else {
             report(token.line(), " at '" + token.lexeme() + "'", message);
         }
-    } 
+    }
 
     private static void report(int line, String where, String message) {
-        Thread.dumpStack();
+        hadError = true;
         System.err.println("[line " + line + "] Error" + where + ": " + message);
     }
 }

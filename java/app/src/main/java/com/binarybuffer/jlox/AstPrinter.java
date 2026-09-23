@@ -1,6 +1,7 @@
 package com.binarybuffer.jlox;
 
 import com.binarybuffer.jlox.Expr.Binary;
+import com.binarybuffer.jlox.Expr.Condition;
 import com.binarybuffer.jlox.Expr.Grouping;
 import com.binarybuffer.jlox.Expr.Literal;
 import com.binarybuffer.jlox.Expr.Unary;
@@ -52,5 +53,10 @@ class AstPrinter implements Expr.Visitor<String> {
 			new Token(TokenType.STAR, "*", null, 1),
 			new Expr.Grouping(new Expr.Literal(45.67)));
 		System.out.println(new AstPrinter().print(expression));
+	}
+
+	@Override
+	public String visitConditionExpr(Condition expr) {
+		return parenthesize("if", expr.condition, expr.truthy, expr.falsy);
 	}
 }

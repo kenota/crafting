@@ -29,13 +29,26 @@ class Parser {
     }
 
     private Expr comma() {
-        Expr expr = equality();
+        Expr expr = ternary();
         while (match(COMMA)) {
             Token operator = previous();
-            Expr right = equality();
+            Expr right = ternary();
             expr = new Expr.Binary(expr, operator, right);
         }
 
+        return expr;
+    }
+
+    private Expr ternary() {
+        Expr expr = equality();
+        while (match(QUESTION)) {
+            Expr truthy = expression();
+            if (!match(COLON)) {
+                error(peek(), "expect : to finish ternary ?: operator");
+            }
+            Expr falsy = expression();
+            expr = new Expr.Condition(expr, truthy, falsy);
+        }
         return expr;
     }
 
