@@ -52,17 +52,19 @@ public class Lox {
             hadError = false;
         }
     }
+
     private static void run(String source){
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        var stmts = parser.parse();
 
         if (hadError) return;
 
-        interpreter.interpret(expression);
+        interpreter.interpret(stmts);
 
     }
+
 
     // error handling
     static void error(int line, String message) {

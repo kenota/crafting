@@ -6,11 +6,14 @@ import com.binarybuffer.jlox.Expr.Grouping;
 import com.binarybuffer.jlox.Expr.Literal;
 import com.binarybuffer.jlox.Expr.Unary;
 import com.binarybuffer.jlox.Expr.Visitor;
-
+import com.binarybuffer.jlox.Stmt.Expression;
+import com.binarybuffer.jlox.Stmt.Print;
 
 import static com.binarybuffer.jlox.Token.*;
 
-class Interpreter implements Visitor<Object> {
+import java.util.List;
+
+class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
     void interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
@@ -18,6 +21,20 @@ class Interpreter implements Visitor<Object> {
         } catch (RuntimeError err) {
             Lox.runtimeError(err);
         }
+    }
+
+    void interpret(List<Stmt> stmts) {
+        try {
+            for (var stmt: stmts) {
+                execute(stmt);
+            }
+        } catch (RuntimeError err) {
+            Lox.runtimeError(err);
+        }
+    }
+
+    void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
 	private String stringify(Object object) {
@@ -131,6 +148,20 @@ class Interpreter implements Visitor<Object> {
 			    throw new RuntimeError(operator, "Operand(s) needs to be a number");
 			}
 		}
+	}
+
+	@Override
+	public Void visitExpressionStmt(Expression stmt) {
+	    evaluate(stmt.expression);
+
+		return null;
+	}
+
+	@Override
+	public Void visitPrintStmt(Print stmt) {
+	    Object value = evaluate(stmt.expression);
+		System.out.println(stringify(value));
+		return null;
 	}
 
 }
