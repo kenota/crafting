@@ -5,6 +5,7 @@ import com.binarybuffer.jlox.Expr.Condition;
 import com.binarybuffer.jlox.Expr.Grouping;
 import com.binarybuffer.jlox.Expr.Literal;
 import com.binarybuffer.jlox.Expr.Unary;
+import com.binarybuffer.jlox.Expr.Variable;
 
 class AstPrinter implements Expr.Visitor<String> {
     String print(Expr expr) {
@@ -58,5 +59,11 @@ class AstPrinter implements Expr.Visitor<String> {
 	@Override
 	public String visitConditionExpr(Condition expr) {
 		return parenthesize("if", expr.condition, expr.truthy, expr.falsy);
+	}
+
+	@Override
+	public String visitVariableExpr(Variable expr) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
 	}
 }

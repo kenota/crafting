@@ -5,15 +5,19 @@ import com.binarybuffer.jlox.Expr.Condition;
 import com.binarybuffer.jlox.Expr.Grouping;
 import com.binarybuffer.jlox.Expr.Literal;
 import com.binarybuffer.jlox.Expr.Unary;
+import com.binarybuffer.jlox.Expr.Variable;
 import com.binarybuffer.jlox.Expr.Visitor;
 import com.binarybuffer.jlox.Stmt.Expression;
 import com.binarybuffer.jlox.Stmt.Print;
+import com.binarybuffer.jlox.Stmt.Var;
 
 import static com.binarybuffer.jlox.Token.*;
 
 import java.util.List;
 
 class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
+    private Environment environment = new Environment();
+
     void interpret(Expr expression) {
         try {
             Object value = evaluate(expression);
@@ -162,6 +166,23 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
 	    Object value = evaluate(stmt.expression);
 		System.out.println(stringify(value));
 		return null;
+	}
+
+	@Override
+	public Void visitVarStmt(Var stmt) {
+	    Object value = null;
+		if (stmt.initializer != null) {
+		    value = stmt.initializer.accept(this);
+		}
+
+		environment.define(stmt.name.lexeme(), value);
+
+		return null;
+	}
+
+	@Override
+	public Object visitVariableExpr(Variable expr) {
+	    return environment.get(expr.name);
 	}
 
 }
