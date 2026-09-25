@@ -1,5 +1,6 @@
 package com.binarybuffer.jlox;
 
+import com.binarybuffer.jlox.Expr.Assign;
 import com.binarybuffer.jlox.Expr.Binary;
 import com.binarybuffer.jlox.Expr.Condition;
 import com.binarybuffer.jlox.Expr.Grouping;
@@ -65,5 +66,11 @@ class AstPrinter implements Expr.Visitor<String> {
 	public String visitVariableExpr(Variable expr) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+	}
+
+	@Override
+	public String visitAssignExpr(Assign expr) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
 	}
 }

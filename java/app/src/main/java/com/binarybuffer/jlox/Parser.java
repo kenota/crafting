@@ -5,6 +5,8 @@ import static com.binarybuffer.jlox.TokenType.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.binarybuffer.jlox.Expr.Variable;
+
 
 
 class Parser {
@@ -54,8 +56,18 @@ class Parser {
 
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
+        if (match(LEFT_BRACE)) return block();
 
         return expressionStatement();
+    }
+
+    private Stmt block() {
+        List<Stmt> stmts = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            stmts.add(declaration());
+        }
+        consume(RIGHT_BRACE, "expect '}' at the end of statement block");
+        return new Stmt.Block(stmts);
     }
 
     private Stmt printStatement() {
@@ -71,7 +83,24 @@ class Parser {
     }
 
     private Expr expression() {
-        return comma();
+        return assignment();
+    }
+
+    private Expr assignment() {
+        Expr expr = comma();
+
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
+
+            if (expr instanceof Variable) {
+                return new Expr.Assign(((Variable)expr).name, value);
+            }
+
+            error(equals, "invalid assign target");
+        }
+
+        return expr;
     }
 
     private Expr comma() {

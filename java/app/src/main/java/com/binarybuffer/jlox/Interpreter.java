@@ -1,5 +1,6 @@
 package com.binarybuffer.jlox;
 
+import com.binarybuffer.jlox.Expr.Assign;
 import com.binarybuffer.jlox.Expr.Binary;
 import com.binarybuffer.jlox.Expr.Condition;
 import com.binarybuffer.jlox.Expr.Grouping;
@@ -7,6 +8,7 @@ import com.binarybuffer.jlox.Expr.Literal;
 import com.binarybuffer.jlox.Expr.Unary;
 import com.binarybuffer.jlox.Expr.Variable;
 import com.binarybuffer.jlox.Expr.Visitor;
+import com.binarybuffer.jlox.Stmt.Block;
 import com.binarybuffer.jlox.Stmt.Expression;
 import com.binarybuffer.jlox.Stmt.Print;
 import com.binarybuffer.jlox.Stmt.Var;
@@ -183,6 +185,34 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
 	@Override
 	public Object visitVariableExpr(Variable expr) {
 	    return environment.get(expr.name);
+	}
+
+	@Override
+	public Object visitAssignExpr(Assign expr) {
+	    Object value = expr.value.accept(this);
+		environment.assign(expr.name, value);
+
+		return value;
+	}
+
+	@Override
+	public Void visitBlockStmt(Block stmt) {
+	    var environment = new Environment(this.environment);
+
+		return executeBlock(stmt, environment);
+	}
+
+	private Void executeBlock(Block stmt, Environment environment) {
+	    var prev = this.environment;
+		try {
+		    this.environment = environment;
+			for (var s: stmt.statements) {
+			    execute(s);
+			}
+		} finally {
+		    this.environment = prev;
+		}
+		return null;
 	}
 
 }
