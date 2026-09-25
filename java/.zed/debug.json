@@ -1,0 +1,26 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+  {
+    "adapter": "Java",
+    "request": "launch",
+    "label": "Launch Debugger",
+    "mainClass": "com.binarybuffer.jlox.Lox",
+    // if your project has multiple entry points, specify the one to use:
+    // "mainClass": "com.myorganization.myproject.MyMainClass",
+    //
+    // this effectively sets a breakpoint at your program entry:
+    "stopOnEntry": true,
+    // the working directory for the debug process
+    "cwd": "$ZED_WORKTREE_ROOT/app/build/classes/main",
+    "build": {
+      "command": "gradle build"
+    },
+    "classPaths": [
+      "$ZED_WORKTREE_ROOT/app/build/classes/java/main",
+      "$ZED_WORKTREE_ROOT/app/build/resources/main"
+    ]
+  },
+]

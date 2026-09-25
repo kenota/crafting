@@ -9,68 +9,67 @@ import com.binarybuffer.jlox.Expr.Unary;
 import com.binarybuffer.jlox.Expr.Variable;
 
 class AstPrinter implements Expr.Visitor<String> {
-    String print(Expr expr) {
-        return expr.accept(this);
+  String print(Expr expr) {
+    return expr.accept(this);
+  }
+
+  @Override
+  public String visitBinaryExpr(Binary expr) {
+    return parenthesize(expr.operator.lexeme(), expr.left, expr.right);
+  }
+
+  @Override
+  public String visitGroupingExpr(Grouping expr) {
+    return parenthesize("group", expr.expression);
+  }
+
+  @Override
+  public String visitLiteralExpr(Literal expr) {
+    if (expr.value == null) return "nil";
+    return expr.value.toString();
+  }
+
+  @Override
+  public String visitUnaryExpr(Unary expr) {
+    return parenthesize(expr.operator.lexeme(), expr.right);
+  }
+
+  private String parenthesize(String name, Expr... exprs) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("(").append(name);
+    for (Expr expr : exprs) {
+      sb.append(" ");
+      sb.append(expr.accept(this));
     }
+    sb.append(")");
 
-	@Override
-	public String visitBinaryExpr(Binary expr) {
-	    return parenthesize(expr.operator.lexeme(), expr.left, expr.right);
-	}
+    return sb.toString();
+  }
 
-	@Override
-	public String visitGroupingExpr(Grouping expr) {
-	    return parenthesize("group", expr.expression);
-	}
+  public static void main(String[] args) {
+    Expr expression =
+        new Expr.Binary(
+            new Expr.Unary(new Token(TokenType.MINUS, "-", null, 1), new Expr.Literal(123)),
+            new Token(TokenType.STAR, "*", null, 1),
+            new Expr.Grouping(new Expr.Literal(45.67)));
+    System.out.println(new AstPrinter().print(expression));
+  }
 
-	@Override
-	public String visitLiteralExpr(Literal expr) {
-	    if (expr.value == null) return "nil";
-		return expr.value.toString();
-	}
+  @Override
+  public String visitConditionExpr(Condition expr) {
+    return parenthesize("if", expr.condition, expr.truthy, expr.falsy);
+  }
 
-	@Override
-	public String visitUnaryExpr(Unary expr) {
-	    return parenthesize(expr.operator.lexeme(), expr.right);
-	}
+  @Override
+  public String visitVariableExpr(Variable expr) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
+  }
 
-	private String parenthesize(String name, Expr... exprs) {
-	    StringBuilder sb = new StringBuilder();
-
-		sb.append("(").append(name);
-		for (Expr expr: exprs) {
-		    sb.append(" ");
-		    sb.append(expr.accept(this));
-		}
-		sb.append(")");
-
-		return sb.toString();
-	}
-
-	public static void main(String[] args) {
-	    Expr expression = new Expr.Binary(
-			new Expr.Unary(
-			    new Token(TokenType.MINUS, "-", null, 1),
-			    new Expr.Literal(123)),
-			new Token(TokenType.STAR, "*", null, 1),
-			new Expr.Grouping(new Expr.Literal(45.67)));
-		System.out.println(new AstPrinter().print(expression));
-	}
-
-	@Override
-	public String visitConditionExpr(Condition expr) {
-		return parenthesize("if", expr.condition, expr.truthy, expr.falsy);
-	}
-
-	@Override
-	public String visitVariableExpr(Variable expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitVariableExpr'");
-	}
-
-	@Override
-	public String visitAssignExpr(Assign expr) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
-	}
+  @Override
+  public String visitAssignExpr(Assign expr) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'visitAssignExpr'");
+  }
 }
