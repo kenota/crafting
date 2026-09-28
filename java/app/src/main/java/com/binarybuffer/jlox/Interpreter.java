@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.binarybuffer.jlox.Expr.Logical;
 import com.binarybuffer.jlox.Expr.Visitor;
+import com.binarybuffer.jlox.Stmt.While;
 
 import static com.binarybuffer.jlox.Expr.*;
 import static com.binarybuffer.jlox.Stmt.*;
@@ -232,9 +233,17 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
       if (isTruthy(left)) return isTruthy(expr.right.accept(this));
     } else if (expr.operator.type() == OR) {
       if (!isTruthy(left)) return isTruthy(expr.right.accept(this));
-    } 
+    }
 
     return false;
+  }
+
+  @Override
+  public Void visitWhileStmt(While stmt) {
+    while (isTruthy(stmt.condition.accept(this))) {
+      stmt.body.accept(this);
+    }
+    return null;
   }
 
 }
