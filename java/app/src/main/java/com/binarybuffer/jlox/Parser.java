@@ -57,8 +57,56 @@ class Parser {
     if (match(PRINT)) return printStatement();
     if (match(LEFT_BRACE)) return block();
     if (match(WHILE)) return whileStatement();
+    if (match(FOR)) return forStatement();
 
     return expressionStatement();
+  }
+
+  // Desugaring FOR statement
+  private Stmt forStatement() {
+    consume(LEFT_PAREN, "Expect '(' after for ");
+    //
+    Stmt init = null;
+    if (!check(SEMICOLON)) {
+      if (check(VAR)) {
+        init = declaration();
+      } else {
+        init = statement();
+      }
+    } else {
+        consume(SEMICOLON, "");
+    }
+
+    // If condition is not specified, its true by default.
+    Expr condition = new Expr.Literal(true);
+    // Condition can be optional too, even though without support of break
+    // this will mean we have unbounded loop
+    if (!check(SEMICOLON)) {
+      condition = expression();
+    }
+    // need to consume semicolon ourselves
+    consume(SEMICOLON, "expect ';' after condition in a for loop");
+
+    Stmt iter = null;
+    if (!check(RIGHT_PAREN)) {
+      iter = new Stmt.Expression(expression());
+    }
+    consume(RIGHT_PAREN, "Expecting closing ')' in for loop");
+    Stmt body = statement();
+
+    List<Stmt> res = new ArrayList<>();
+    if (init != null) {
+      res.add(init);
+    }
+    List<Stmt> whileBody = new ArrayList<>();
+    whileBody.add(body);
+
+    if (iter != null) {
+      whileBody.add(iter);
+    }
+
+    res.add(new Stmt.While(condition, new Stmt.Block(whileBody)));
+    return new Stmt.Block(res);
   }
 
   private Stmt whileStatement() {
