@@ -241,7 +241,7 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Void visitWhileStmt(While stmt) {
     while (isTruthy(stmt.condition.accept(this))) {
-      stmt.body.accept(this);
+      execute(stmt.body);
     }
     return null;
   }
