@@ -2,19 +2,12 @@ package com.binarybuffer.jlox;
 
 import static com.binarybuffer.jlox.Token.*;
 
-import com.binarybuffer.jlox.Expr.Assign;
-import com.binarybuffer.jlox.Expr.Binary;
-import com.binarybuffer.jlox.Expr.Condition;
-import com.binarybuffer.jlox.Expr.Grouping;
-import com.binarybuffer.jlox.Expr.Literal;
-import com.binarybuffer.jlox.Expr.Unary;
-import com.binarybuffer.jlox.Expr.Variable;
-import com.binarybuffer.jlox.Expr.Visitor;
-import com.binarybuffer.jlox.Stmt.Block;
-import com.binarybuffer.jlox.Stmt.Expression;
-import com.binarybuffer.jlox.Stmt.Print;
-import com.binarybuffer.jlox.Stmt.Var;
 import java.util.List;
+
+import com.binarybuffer.jlox.Expr.Visitor;
+
+import static com.binarybuffer.jlox.Expr.*;
+import static com.binarybuffer.jlox.Stmt.*;
 
 class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
   private Environment environment = new Environment();
@@ -122,8 +115,13 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitConditionExpr(Condition expr) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'visitConditionExpr'");
+    if (isTruthy(expr.condition.accept(this))) {
+      return expr.truthy.accept(this);
+    } else if (expr.falsy != null) {
+      return expr.falsy.accept(this);
+    }
+
+    return null;
   }
 
   private Object evaluate(Expr expr) {
@@ -213,4 +211,15 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
     }
     return null;
   }
+
+  @Override
+  public Void visitIfStmt(If stmt) {
+    if (isTruthy(stmt.condition.accept(this))) {
+      stmt.thenBranch.accept(this);
+    } else if (stmt.elseBranch != null) {
+      stmt.elseBranch.accept(this);
+    }
+    return null;
+  }
+
 }
