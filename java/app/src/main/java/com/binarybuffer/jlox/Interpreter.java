@@ -1,9 +1,12 @@
 package com.binarybuffer.jlox;
 
 import static com.binarybuffer.jlox.Token.*;
+import static com.binarybuffer.jlox.TokenType.AND;
+import static com.binarybuffer.jlox.TokenType.OR;
 
 import java.util.List;
 
+import com.binarybuffer.jlox.Expr.Logical;
 import com.binarybuffer.jlox.Expr.Visitor;
 
 import static com.binarybuffer.jlox.Expr.*;
@@ -220,6 +223,18 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
       stmt.elseBranch.accept(this);
     }
     return null;
+  }
+
+  @Override
+  public Object visitLogicalExpr(Logical expr) {
+    var left = expr.left.accept(this);
+    if (expr.operator.type() == AND) {
+      if (isTruthy(left)) return isTruthy(expr.right.accept(this));
+    } else if (expr.operator.type() == OR) {
+      if (!isTruthy(left)) return isTruthy(expr.right.accept(this));
+    } 
+
+    return false;
   }
 
 }

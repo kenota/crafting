@@ -23,6 +23,7 @@ public class GenerateAst {
             "Literal   : Object value",
             "Unary     : Token operator, Expr right",
             "Condition : Expr condition, Expr truthy, Expr falsy",
+            "Logical   : Expr left, Token operator, Expr right",
             "Variable  : Token name"));
     defineAst(
         outputDir,

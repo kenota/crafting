@@ -128,7 +128,7 @@ class Parser {
   }
 
   private Expr ternary() {
-    Expr expr = equality();
+    Expr expr = or();
     while (match(QUESTION)) {
       Expr truthy = expression();
       if (!match(COLON)) {
@@ -137,6 +137,29 @@ class Parser {
       Expr falsy = expression();
       expr = new Expr.Condition(expr, truthy, falsy);
     }
+    return expr;
+  }
+
+  private Expr or() {
+    Expr expr = and();
+
+    while (match(OR)) {
+      var token = previous();
+      Expr right = or();
+      expr = new Expr.Logical(expr, token, right);
+    }
+    return expr;
+  }
+
+  private Expr and() {
+    Expr expr = equality();
+
+    while (match(AND)) {
+      var token = previous();
+      Expr right = and();
+      expr = new Expr.Logical(expr, token, right);
+    }
+
     return expr;
   }
 
