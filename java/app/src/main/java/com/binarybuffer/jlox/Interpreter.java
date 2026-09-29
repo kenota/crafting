@@ -1,22 +1,44 @@
 package com.binarybuffer.jlox;
 
+import static com.binarybuffer.jlox.Expr.*;
+import static com.binarybuffer.jlox.Stmt.*;
 import static com.binarybuffer.jlox.Token.*;
 import static com.binarybuffer.jlox.TokenType.AND;
 import static com.binarybuffer.jlox.TokenType.OR;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.binarybuffer.jlox.Expr.Call;
 import com.binarybuffer.jlox.Expr.Logical;
 import com.binarybuffer.jlox.Expr.Visitor;
+import com.binarybuffer.jlox.Stmt.Function;
 import com.binarybuffer.jlox.Stmt.While;
-
-import static com.binarybuffer.jlox.Expr.*;
-import static com.binarybuffer.jlox.Stmt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
-  private Environment environment = new Environment();
+  Environment globals = new Environment();
+  private Environment environment = globals;
+
+  Interpreter() {
+    globals.define(
+        "clock",
+        new LoxCallable() {
+
+          @Override
+          public int arity() {
+            return 0;
+          }
+
+          @Override
+          public Object call(Interpreter interpreter, List<Object> args) {
+            return (double) System.currentTimeMillis() / 1000.0;
+          }
+
+          @Override
+          public String toString() {
+            return "<native code>";
+          }
+        });
+  }
 
   void interpret(Expr expression) {
     try {
@@ -250,23 +272,44 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
 
   @Override
   public Object visitCallExpr(Call expr) {
-      var calleeObj = evaluate(expr.callee);
-      if (!(calleeObj instanceof LoxCallable)) {
-        throw new RuntimeError(expr.paren, "can only call functions and classes");
-      }
-      var callee = (LoxCallable) calleeObj;
+    var calleeObj = evaluate(expr.callee);
+    if (!(calleeObj instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, "can only call functions and classes");
+    }
+    var callee = (LoxCallable) calleeObj;
 
-      List<Object> args = new ArrayList<>();
-      for (var a: expr.arguments) {
-          args.add(evaluate(a));
-      }
+    List<Object> args = new ArrayList<>();
+    for (var a : expr.arguments) {
+      args.add(evaluate(a));
+    }
 
-      if (callee.arity() != args.size()) {
-        throw new RuntimeError(expr.paren, "Expecting " + callee.arity() + " args but got " + args.size());
-      }
+    if (callee.arity() != args.size()) {
+      throw new RuntimeError(
+          expr.paren, "Expecting " + callee.arity() + " args but got " + args.size());
+    }
 
-
-      return callee.call(this, args);
+    return callee.call(this, args);
   }
 
+  @Override
+  public Void visitFunctionStmt(Function stmt) {
+    var f = new LoxFunction(stmt);
+    environment.define(stmt.name.lexeme(), f);
+
+    return null;
+  }
+
+  public Object executeBlock(List<Stmt> body, Environment environment) {
+    var prev = this.environment;
+    try {
+      this.environment = environment;
+      for (var s : body) {
+        s.accept(this);
+      }
+    } finally {
+      this.environment = prev;
+    }
+
+    return null;
+  }
 }

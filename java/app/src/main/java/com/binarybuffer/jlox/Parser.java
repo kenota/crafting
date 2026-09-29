@@ -32,12 +32,35 @@ class Parser {
 
   private Stmt declaration() {
     try {
+      if (match(FUN)) return function("function");
       if (match(VAR)) return variable();
       return statement();
     } catch (ParseError err) {
       synchronize();
       return null;
     }
+  }
+
+  private Stmt function(String kind) {
+    List<Token> args = new ArrayList<>();
+
+    Token name = consume(IDENTIFIER, "Expect name of the " + kind);
+
+    consume(LEFT_PAREN, "Expect ( to start argument list of the " + kind);
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (args.size() >= 255) {
+          error(peek(), "cant have more than 255 parameters");
+        }
+        args.add(consume(IDENTIFIER, "expecting parameter name"));
+      } while (match(COMMA));
+    }
+    consume(RIGHT_PAREN, "expecting ')' after argument list");
+
+    consume(LEFT_BRACE, "expecting '{' before start of " + kind + " body");
+    List<Stmt> body = block();
+    return new Stmt.Function(name, args, body);
+
   }
 
   private Stmt variable() {
@@ -55,7 +78,7 @@ class Parser {
   private Stmt statement() {
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
-    if (match(LEFT_BRACE)) return block();
+    if (match(LEFT_BRACE)) return new Stmt.Block(block());
     if (match(WHILE)) return whileStatement();
     if (match(FOR)) return forStatement();
 
@@ -131,13 +154,13 @@ class Parser {
     return new Stmt.If(condition, thenBranch, elseBranch);
   }
 
-  private Stmt block() {
+  private List<Stmt> block() {
     List<Stmt> stmts = new ArrayList<>();
     while (!check(RIGHT_BRACE) && !isAtEnd()) {
       stmts.add(declaration());
     }
     consume(RIGHT_BRACE, "expect '}' at the end of statement block");
-    return new Stmt.Block(stmts);
+    return stmts;
   }
 
   private Stmt printStatement() {
@@ -157,7 +180,7 @@ class Parser {
   }
 
   private Expr assignment() {
-    Expr expr = comma();
+    Expr expr = ternary();
 
     if (match(EQUAL)) {
       Token equals = previous();
@@ -173,16 +196,16 @@ class Parser {
     return expr;
   }
 
-  private Expr comma() {
-    Expr expr = ternary();
-    while (match(COMMA)) {
-      Token operator = previous();
-      Expr right = ternary();
-      expr = new Expr.Binary(expr, operator, right);
-    }
+  // private Expr comma() {
+  //   Expr expr = ternary();
+  //   while (match(COMMA)) {
+  //     Token operator = previous();
+  //     Expr right = ternary();
+  //     expr = new Expr.Binary(expr, operator, right);
+  //   }
 
-    return expr;
-  }
+  //   return expr;
+  // }
 
   private Expr ternary() {
     Expr expr = or();
