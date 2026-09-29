@@ -4,8 +4,10 @@ import static com.binarybuffer.jlox.Token.*;
 import static com.binarybuffer.jlox.TokenType.AND;
 import static com.binarybuffer.jlox.TokenType.OR;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.binarybuffer.jlox.Expr.Call;
 import com.binarybuffer.jlox.Expr.Logical;
 import com.binarybuffer.jlox.Expr.Visitor;
 import com.binarybuffer.jlox.Stmt.While;
@@ -244,6 +246,27 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
       execute(stmt.body);
     }
     return null;
+  }
+
+  @Override
+  public Object visitCallExpr(Call expr) {
+      var calleeObj = evaluate(expr.callee);
+      if (!(calleeObj instanceof LoxCallable)) {
+        throw new RuntimeError(expr.paren, "can only call functions and classes");
+      }
+      var callee = (LoxCallable) calleeObj;
+
+      List<Object> args = new ArrayList<>();
+      for (var a: expr.arguments) {
+          args.add(evaluate(a));
+      }
+
+      if (callee.arity() != args.size()) {
+        throw new RuntimeError(expr.paren, "Expecting " + callee.arity() + " args but got " + args.size());
+      }
+
+
+      return callee.call(this, args);
   }
 
 }
