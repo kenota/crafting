@@ -81,8 +81,19 @@ class Parser {
     if (match(LEFT_BRACE)) return new Stmt.Block(block());
     if (match(WHILE)) return whileStatement();
     if (match(FOR)) return forStatement();
+    if (match(RETURN)) return returnStatement();
 
     return expressionStatement();
+  }
+
+  private Stmt returnStatement() {
+    var keyword = previous();
+    Expr value = null;
+    if (!check(SEMICOLON)) {
+      value = expression();
+    }
+    consume(SEMICOLON, "Expecting ';' at the end of the statement");
+    return new Stmt.Return(keyword, value);
   }
 
   // Desugaring FOR statement

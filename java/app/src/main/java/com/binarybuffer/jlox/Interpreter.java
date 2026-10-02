@@ -1,18 +1,24 @@
 package com.binarybuffer.jlox;
 
-import static com.binarybuffer.jlox.Expr.*;
-import static com.binarybuffer.jlox.Stmt.*;
-import static com.binarybuffer.jlox.Token.*;
 import static com.binarybuffer.jlox.TokenType.AND;
 import static com.binarybuffer.jlox.TokenType.OR;
 
-import com.binarybuffer.jlox.Expr.Call;
-import com.binarybuffer.jlox.Expr.Logical;
-import com.binarybuffer.jlox.Expr.Visitor;
-import com.binarybuffer.jlox.Stmt.Function;
-import com.binarybuffer.jlox.Stmt.While;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.binarybuffer.jlox.Expr.Assign;
+import com.binarybuffer.jlox.Expr.Binary;
+import com.binarybuffer.jlox.Expr.Call;
+import com.binarybuffer.jlox.Expr.Condition;
+import com.binarybuffer.jlox.Expr.Grouping;
+import com.binarybuffer.jlox.Expr.Literal;
+import com.binarybuffer.jlox.Expr.Logical;
+import com.binarybuffer.jlox.Expr.Unary;
+import com.binarybuffer.jlox.Expr.Variable;
+import com.binarybuffer.jlox.Expr.Visitor;
+import static com.binarybuffer.jlox.Stmt.*;
+import com.google.errorprone.annotations.Var;
+
 
 class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
   Environment globals = new Environment();
@@ -196,7 +202,7 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
-  public Void visitVarStmt(Var stmt) {
+  public Void visitVarStmt(Stmt.Var stmt) {
     Object value = null;
     if (stmt.initializer != null) {
       value = stmt.initializer.accept(this);
@@ -311,5 +317,16 @@ class Interpreter implements Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     return null;
+  }
+
+  @Override
+  public Void visitReturnStmt(Stmt.Return stmt) {
+    Object value = null;
+    if (stmt.value != null) {
+      value = stmt.value.accept(this);
+    }
+
+    throw new ReturnVal(value);
+
   }
 }
